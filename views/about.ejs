@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="/css/main.css" />
+
+    <title>Lego Collection</title>
+</head>
+<body>
+    <header>
+      <%- include('partials/navbar', {page:"/about"}) %>
+    </header>
+    <main class="container mx-auto">
+        <!-- Hero splash -->
+        <div class="hero min-h-screen bg-base-200">
+            <div class="hero-content text-center">
+              <div class="max-w-md">
+                <h1 class="text-5xl font-bold">About</h1>
+                <p class="py-6">Everything you need to know about me!</p>
+              </div>
+            </div>
+          </div>
+        <!-- Grid -->
+          <div class="container mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                <!-- Card 1 -->
+              <div class="border-2">
+                <img class="w-full" src="https://static.wikia.nocookie.net/gurennlagann/images/1/1f/Kaminarox.jpg" alt="Kamina from Gurren Lagann" />
+              </div>
+              <!-- Card 2 -->
+              <div class="border-2">
+                <p>
+                    My name is Kyle and I am a student at Seneca Polytechnic. I am taking the Computer Programming and Analysis program. My hobbies include playing strategy games, watching sports and anime, and attending conventions.
+                </p>
+              </div>
+            </div>
+          </div>
+    </main>
+</body>
+</html>
