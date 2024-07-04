@@ -6,9 +6,9 @@
 * 
 *  https://www.senecacollege.ca/about/policies/academic-integrity-policy.html
 * 
-*  Name: Kyle Homen Student ID: 105669238 Date: 2024-05-28
+*  Name: Kyle Homen Student ID: 105669238 Date: 2024-07-04
 *
-*  Published URL: ___________________________________________________________
+*  Published URL: https://lego-site.vercel.app/
 *
 ********************************************************************************/
 
@@ -21,45 +21,47 @@ const app = express();
 const HTTP_PORT = process.env.PORT || 8080;
 
 app.set('views', __dirname + '/views');
+app.set('view engine', 'ejs');
 
 app.use(express.static(__dirname + '/public'));
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, "/views/home.html"));
+    res.render("home");
 });
 
 app.get('/about', (req, res) => {
-    res.sendFile(path.join(__dirname, "/views/about.html"));
+    res.render("about");
 });
 
 app.get("/lego/sets", async (req, res) => {
+    let sets = [];
     try {
         if (req.query.theme) {
-            let sets = await legoData.getSetsByTheme(req.query.theme);
-            res.send(sets);
+            sets = await legoData.getSetsByTheme(req.query.theme);
         }
         else {
-            let sets = await legoData.getAllSets();
-            res.send(sets);
+            sets = await legoData.getAllSets();
         }
+
+        res.render("sets", {sets})
     }
     catch (err) {
-        res.status(404).send(err);
+        res.status(404).render("404", {message: err});
     }
 });
 
 app.get("/lego/sets/:num", async (req, res) => {
     try {
         let set = await legoData.getSetByNum(req.params.num);
-        res.send(set);
+        res.render("set", {set});
     }
     catch (err) {
-        res.status(404).send(err);
+        res.status(404).render("404", {message: err});
     }
 });
 
 app.use((req, res, next) => {
-    res.status(404).sendFile(path.join(__dirname, "/views/404.html"));
+    res.status(404).render("404", {message: "I'm sorry, we're unable to find what you're looking for"});
   });
 
 // After sets is populated, THEN we listen for port

@@ -63,18 +63,5 @@ function getSetsByTheme(theme) {
     });
 }
 
-function getSetsByNumOfParts(num) {
-    return new Promise((resolve, reject) => {
-        let numParts = setData.filter(e => (e.num_parts === num));
-
-        if (numParts) {
-            resolve(numParts)
-        }
-        else {
-            reject("No set has that amount of parts")
-        }
-    })
-}
-
 // Make exportable to access in other files
-module.exports = {initialize, getAllSets, getSetByNum, getSetsByTheme, getSetsByNumOfParts};
+module.exports = {initialize, getAllSets, getSetByNum, getSetsByTheme};
