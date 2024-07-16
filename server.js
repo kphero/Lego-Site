@@ -1,12 +1,12 @@
 /********************************************************************************
-*  WEB322 – Assignment 03
+*  WEB322 – Assignment 05
 * 
 *  I declare that this assignment is my own work in accordance with Seneca's
 *  Academic Integrity Policy:
 * 
 *  https://www.senecacollege.ca/about/policies/academic-integrity-policy.html
 * 
-*  Name: Kyle Homen Student ID: 105669238 Date: 2024-07-04
+*  Name: Kyle Homen Student ID: 105669238 Date: 2024-07-16
 *
 *  Published URL: https://lego-site.vercel.app/
 *
@@ -24,6 +24,7 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
 app.use(express.static(__dirname + '/public'));
+app.use(express.urlencoded({extended:true}));
 
 app.get('/', (req, res) => {
     res.render("home");
@@ -57,6 +58,49 @@ app.get("/lego/sets/:num", async (req, res) => {
     }
     catch (err) {
         res.status(404).render("404", {message: err});
+    }
+});
+
+app.get("/lego/addSet", async (req, res) => {
+    let themes = await legoData.getAllThemes();
+    res.render("addSet", {themes: themes});
+});
+
+app.post("/lego/addSet", async (req, res) => {
+    try {
+        await legoData.addSet(req.body);
+        res.redirect("/lego/sets");
+    } catch (err) {
+        res.render("500", {message: `I'm sorry, but we've encountered the following error: ${err}`});
+    }
+});
+
+app.get("/lego/editSet/:num", async (req, res) => {
+    try {
+        let set = await legoData.getSetByNum(req.params.num);
+        let themes = await legoData.getAllThemes();
+
+        res.render("editSet", {set, themes});
+    } catch (err) {
+        res.status(404).render("404", {message: err});
+    }
+});
+
+app.post("/lego/editSet", async (req, res) => {
+    try {
+        await legoData.editSet(req.body.set_num, req.body);
+        res.redirect("/lego/sets");
+    } catch (err) {
+        res.render("500", {message: `I'm sorry, but we've encountered the following error: ${err}`});
+    }
+});
+
+app.get("/lego/deleteSet/:num", async (req, res) => {
+    try {
+        await legoData.deleteSet(req.params.num);
+        res.redirect("/lego/sets");
+    } catch (err) {
+        res.status(500).render("500", {message: `I'm sorry, but we've encountered the following error: ${err}`});
     }
 });
 

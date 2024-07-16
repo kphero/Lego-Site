@@ -10,58 +10,146 @@
 *
 ********************************************************************************/
 
-const setData = require("../data/setData");
-const themeData = require("../data/themeData");
+require('dotenv').config();
 
-let sets = [];
+const Sequelize = require('sequelize');
+
+// set up sequelize to point to our postgres database
+const sequelize = new Sequelize('SenecaDB', 'SenecaDB_owner', 'CNOj2EylG0ko', {
+  host: 'ep-long-sun-a5s5buxj.us-east-2.aws.neon.tech',
+  dialect: 'postgres',
+  port: 5432,
+  dialectOptions: {
+    ssl: { rejectUnauthorized: false },
+  },
+});
+
+// Define a "Theme" model
+const Theme = sequelize.define(
+    'Theme',
+    {
+      id: {
+        type: Sequelize.INTEGER,
+        primaryKey: true, // use "id" as a primary key
+        autoIncrement: true, // automatically increment the value
+      },
+      name: Sequelize.STRING,
+    },
+    {
+      createdAt: false, // disable createdAt
+      updatedAt: false, // disable updatedAt
+    }
+  );
+
+  // Define a "Set" model
+const Set = sequelize.define(
+    'Set',
+    {
+      set_num: {
+        type: Sequelize.STRING,
+        primaryKey: true, // use "set_num" as a primary key
+      },
+      name: Sequelize.STRING,
+      year: Sequelize.INTEGER,
+      num_parts: Sequelize.INTEGER,
+      theme_id: Sequelize.INTEGER,
+      img_url: Sequelize.STRING,
+    },
+    {
+      createdAt: false, // disable createdAt
+      updatedAt: false, // disable updatedAt
+    }
+  );
+
+  Set.belongsTo(Theme, {foreignKey: 'theme_id'});
+
 
 // Fills set array with objects from setData, while also adding a theme property
 function initialize() {
-    return new Promise((resolve, reject) => {
-        setData.forEach(setElement => {
-            // Creates new variable, adds all the data of an object from setData
-            // Then creates "theme" property and looks through themeData by matching id to add correct theme
-            let setWithTheme = {...setElement, theme: themeData.find(themeElement => themeElement.id == setElement.theme_id).name };
-            sets.push(setWithTheme);
+    return new Promise(async (resolve, reject) => {
+        try {
+            await sequelize.sync();
             resolve();
-        });
+        } catch (err) {
+            reject(err.message);
+        }
     });
 }
 
 function getAllSets() {
-    return new Promise((resolve, reject) => {
-        // Just displays all sets in the set array
+    return new Promise(async (resolve, reject) => {
+        let sets = await Set.findAll({include: [Theme]});
         resolve(sets);
     });
 }
 
+function getAllThemes() {
+    return new Promise(async (resolve, reject) => {
+        let themes = await Theme.findAll();
+        resolve(themes);
+    });
+}
+
 function getSetByNum(setNum) {
-    return new Promise((resolve, reject) => {
-        // Use find() to match setNum to set_num property and returns that set if found
-        let foundSet = sets.find(s => s.set_num == setNum);
+    return new Promise(async (resolve, reject) => {
+        let foundSet = await Set.findAll({include: [Theme], where: {set_num: setNum}});
 
         if (foundSet) {
-            resolve(foundSet)
-        }
-        else {
+            resolve(foundSet[0])
+        } else {
             reject("Unable to find requested set");
         }
     });
 }
 
 function getSetsByTheme(theme) {
-    return new Promise((resolve, reject) => {
-        // Shows all the sets that match the given theme, regardless of case
-        let foundSets = sets.filter(s => s.theme.toUpperCase().includes(theme.toUpperCase()));
+    return new Promise(async (resolve, reject) => {
+        let foundSets = await Set.findAll({include: [Theme], where: {
+            '$Theme.name$': {
+                [Sequelize.Op.iLike]: `%${theme}%`
+            }
+        }});
 
         if (foundSets) {
-            resolve(foundSets)
-        }
-        else {
+            resolve(foundSets);
+        } else {
             reject("Unable to find requested sets")
         }
     });
 }
 
+function addSet(setData) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            await Set.create(setData);
+            resolve();
+        } catch (err) {
+            reject(err.errors[0].message);
+        }
+    });
+}
+
+function editSet(setNum, setData) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            await Set.update(setData, {where: {set_num: setNum}});
+            resolve();
+        } catch (err) {
+            reject(err.errors[0].message);
+        }
+    });
+}
+
+function deleteSet(setNum) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            await Set.destroy({where: {set_num : setNum}});
+            resolve();
+        } catch (err) {
+            reject(err.errors[0].message);
+        }
+    });
+}
+
 // Make exportable to access in other files
-module.exports = {initialize, getAllSets, getSetByNum, getSetsByTheme};
+module.exports = {initialize, getAllSets, getSetByNum, getSetsByTheme, getAllThemes, addSet, editSet, deleteSet};
