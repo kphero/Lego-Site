@@ -18,6 +18,9 @@ const path = require('path');
 const express = require('express');
 const app = express();
 
+require("pg");
+const Sequelize = require("sequelize");
+
 const HTTP_PORT = process.env.PORT || 8080;
 
 app.set('views', __dirname + '/views');
